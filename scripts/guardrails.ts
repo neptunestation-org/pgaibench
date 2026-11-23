@@ -17,12 +17,16 @@ export function parseTypeErrors(output: string, root = ""): string[] {
   return out;
 }
 
-/** bun test failures as "test-file test name", without timing. Unhandled errors count as failures of their file. */
+/**
+ * bun test failures as "test-file test name", without timing. Unhandled errors count as failures of their file.
+ * Outside an AI agent, bun repeats every failure after an "N tests failed:" line; parsing stops there.
+ */
 export function parseTestFailures(output: string): string[] {
   const out: string[] = [];
   let file = "";
   for (const line of output.split("\n")) {
     const header = /^(?:::group::)?(\S.*\.test\.tsx?):$/.exec(line);
+    if (/^\d+ tests? failed:$/.test(line)) break;
     if (header) file = header[1];
     else if (line.startsWith("(fail) ")) out.push(`${file} ${line.slice(7).replace(/ \[[\d.]+m?s\]$/, "")}`);
     else if (line.includes("Unhandled error between tests")) out.push(`${file} <unhandled error>`);

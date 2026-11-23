@@ -41,6 +41,11 @@ describe("parseTestFailures", () => {
     ]);
   });
 
+  test("ignores the failure summary bun repeats at the end outside an agent", () => {
+    const out = ["src/a.test.ts:", "(fail) breaks [1.00ms]", "", "src/b.test.ts:", "(pass) ok", "", "1 tests failed:", "(fail) breaks [1.00ms]"].join("\n");
+    expect(parseTestFailures(out)).toEqual(["src/a.test.ts breaks"]);
+  });
+
   test("reads file headers in GitHub Actions group form", () => {
     const out = ["::group::src/a.test.ts:", "(fail) breaks [1.00ms]", "::endgroup::"].join("\n");
     expect(parseTestFailures(out)).toEqual(["src/a.test.ts breaks"]);
