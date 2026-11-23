@@ -14,8 +14,12 @@ const ROOT = join(import.meta.dir, "..");
 
 type Check = { name: string; baseline: string; run: () => Promise<string>; parse: (output: string) => string[] };
 
+// bun test changes its output format under CI (group markers, a repeated
+// failure summary), so we run it with the CI variables removed.
+const { CI: _ci, GITHUB_ACTIONS: _gha, ...LOCAL_ENV } = process.env;
+
 async function output(cmd: string[]): Promise<string> {
-  const proc = Bun.spawn(cmd, { cwd: ROOT, stdout: "pipe", stderr: "pipe" });
+  const proc = Bun.spawn(cmd, { cwd: ROOT, env: LOCAL_ENV, stdout: "pipe", stderr: "pipe" });
   const [out, err] = await Promise.all([new Response(proc.stdout).text(), new Response(proc.stderr).text()]);
   await proc.exited;
   return `${out}\n${err}`;
@@ -26,7 +30,7 @@ const CHECKS: Check[] = [
     name: "types",
     baseline: join(ROOT, "scripts", "baselines", "typecheck.txt"),
     run: () => output([join(ROOT, "node_modules", ".bin", "tsc"), "-p", "."]),
-    parse: parseTypeErrors,
+    parse: (out) => parseTypeErrors(out, ROOT),
   },
   {
     name: "tests",

@@ -37,7 +37,7 @@ site/test/pooled.test.ts TS2339 Property 'paired' does not exist on type '{ id: 
 site/test/prompt.test.ts TS2345 Argument of type 'string | null' is not assignable to parameter of type 'string'.
 site/test/safety.test.ts TS2345 Argument of type '{ id: string; points: { label: string; x: number; y: number; }[]; xMax: number; origin: "median"; baselines: { label: string; x: number; y: number; }[]; caption: string; }' is not assignable to parameter of type '{ id: string; points: QPoint[]; xMax: number; yMax?: number | undefined; width: number; origin?: "absolute" | "median" | undefined; baselines?: QPoint[] | undefined; line?: number | undefined; names?: boolean | undefined; } & { ...; }'.
 site/test/switcher.test.ts TS2345 Argument of type '{ id: string; points: QPoint[]; xMax: number; caption: string; }' is not assignable to parameter of type '{ id: string; points: QPoint[]; xMax: number; yMax?: number | undefined; width: number; origin?: "absolute" | "median" | undefined; baselines?: QPoint[] | undefined; line?: number | undefined; names?: boolean | undefined; } & { ...; }'.
-site/test/switcher.test.ts TS7016 Could not find a declaration file for module '../assets/plot.js'. '/home/david-a-ventimiglia/Work/neptunestation-org/pgaibench/site/assets/plot.js' implicitly has an 'any' type.
+site/test/switcher.test.ts TS7016 Could not find a declaration file for module '../assets/plot.js'. 'site/assets/plot.js' implicitly has an 'any' type.
 src/actor/actor-clone-standby.test.ts TS2769 No overload matches this call.
 src/actor/actor.test.ts TS2769 No overload matches this call.
 src/actor/actor.test.ts TS2769 No overload matches this call.

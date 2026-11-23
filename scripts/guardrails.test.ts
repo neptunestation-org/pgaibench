@@ -10,11 +10,13 @@ describe("parseTypeErrors", () => {
       "src/a.ts(12,3): error TS2339: Property 'x' does not exist on type 'Y'.",
       "src/b.ts(1,1): error TS7006: Parameter 'p' implicitly has an 'any' type.",
       "  continuation line of a long message",
-      "Found 2 errors.",
+      "/work/repo/src/c.ts(2,2): error TS7016: Could not find a declaration file for module './d.js'. '/work/repo/src/d.js' implicitly has an 'any' type.",
+      "Found 3 errors.",
     ].join("\n");
-    expect(parseTypeErrors(out)).toEqual([
+    expect(parseTypeErrors(out, "/work/repo")).toEqual([
       "src/a.ts TS2339 Property 'x' does not exist on type 'Y'.",
       "src/b.ts TS7006 Parameter 'p' implicitly has an 'any' type.",
+      "src/c.ts TS7016 Could not find a declaration file for module './d.js'. 'src/d.js' implicitly has an 'any' type.",
     ]);
   });
 });
@@ -37,6 +39,11 @@ describe("parseTestFailures", () => {
       "src/b.test.ts <unhandled error>",
       "src/b.test.ts no timing",
     ]);
+  });
+
+  test("reads file headers in GitHub Actions group form", () => {
+    const out = ["::group::src/a.test.ts:", "(fail) breaks [1.00ms]", "::endgroup::"].join("\n");
+    expect(parseTestFailures(out)).toEqual(["src/a.test.ts breaks"]);
   });
 });
 

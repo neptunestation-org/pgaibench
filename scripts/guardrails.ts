@@ -3,10 +3,14 @@
 // clean on main, so each is compared with a committed baseline of known
 // failures in scripts/baselines/: only a new failure fails the check.
 
-/** tsc errors as "file TSxxxx message", without line and column, so edits elsewhere in a file do not churn the baseline. */
-export function parseTypeErrors(output: string): string[] {
+/**
+ * tsc errors as "file TSxxxx message", without line and column, so edits elsewhere in a file do not churn the baseline.
+ * Absolute paths under root become relative, so the baseline matches on every checkout.
+ */
+export function parseTypeErrors(output: string, root = ""): string[] {
   const out: string[] = [];
-  for (const line of output.split("\n")) {
+  const text = root === "" ? output : output.split(`${root.replace(/\/$/, "")}/`).join("");
+  for (const line of text.split("\n")) {
     const m = /^(.+?)\(\d+,\d+\): error (TS\d+): (.*)$/.exec(line);
     if (m) out.push(`${m[1]} ${m[2]} ${m[3]}`);
   }
@@ -18,7 +22,7 @@ export function parseTestFailures(output: string): string[] {
   const out: string[] = [];
   let file = "";
   for (const line of output.split("\n")) {
-    const header = /^(\S.*\.test\.tsx?):$/.exec(line);
+    const header = /^(?:::group::)?(\S.*\.test\.tsx?):$/.exec(line);
     if (header) file = header[1];
     else if (line.startsWith("(fail) ")) out.push(`${file} ${line.slice(7).replace(/ \[[\d.]+m?s\]$/, "")}`);
     else if (line.includes("Unhandled error between tests")) out.push(`${file} <unhandled error>`);
