@@ -61,6 +61,12 @@ describe("compareBaseline", () => {
     expect(compareBaseline(["x"], ["x", "x"])).toEqual({ added: ["x"], removed: [] });
   });
 
+  test("with a key, entries that differ only outside the key match", () => {
+    const name = (e: string) => e.slice(e.indexOf(" ") + 1);
+    expect(compareBaseline(["a.test.ts shared"], ["b.test.ts shared"], name)).toEqual({ added: [], removed: [] });
+    expect(compareBaseline(["a.test.ts one"], ["a.test.ts two"], name)).toEqual({ added: ["a.test.ts two"], removed: ["a.test.ts one"] });
+  });
+
   test("an unchanged set has nothing added or removed", () => {
     expect(compareBaseline(["b", "a"], ["a", "b"])).toEqual({ added: [], removed: [] });
   });

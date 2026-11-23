@@ -34,19 +34,30 @@ export function parseTestFailures(output: string): string[] {
   return out;
 }
 
-/** Compares two lists as multisets: a second copy of a known entry is new. */
-export function compareBaseline(baseline: readonly string[], current: readonly string[]): { added: string[]; removed: string[] } {
-  const counts = new Map<string, number>();
-  for (const e of baseline) counts.set(e, (counts.get(e) ?? 0) + 1);
+/** Compares two lists as multisets of their keys: a second copy of a known entry is new. */
+export function compareBaseline(
+  baseline: readonly string[],
+  current: readonly string[],
+  key: (entry: string) => string = (e) => e,
+): { added: string[]; removed: string[] } {
+  const known = new Map<string, string[]>();
+  for (const e of baseline) known.set(key(e), [...(known.get(key(e)) ?? []), e]);
   const added: string[] = [];
   for (const e of current) {
-    const n = counts.get(e) ?? 0;
-    if (n > 0) counts.set(e, n - 1);
+    const left = known.get(key(e));
+    if (left !== undefined && left.length > 0) left.pop();
     else added.push(e);
   }
-  const removed = [...counts].flatMap(([e, n]) => Array<string>(n).fill(e));
+  const removed = [...known.values()].flat();
   return { added: added.sort(), removed: removed.sort() };
 }
+
+/**
+ * A test failure's key is its name without the file. A test defined in a file
+ * that other test files import runs, and is reported, under whichever importer
+ * bun runs first, and that order differs between machines.
+ */
+export const testName = (entry: string) => entry.slice(entry.indexOf(" ") + 1);
 
 export const MAX_SUBJECT = 72;
 

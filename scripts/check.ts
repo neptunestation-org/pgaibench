@@ -1,6 +1,6 @@
 import { readFileSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { compareBaseline, parseTestFailures, parseTypeErrors } from "./guardrails";
+import { compareBaseline, parseTestFailures, parseTypeErrors, testName } from "./guardrails";
 
 // bun run check [types|tests] [--update]
 //
@@ -12,7 +12,13 @@ import { compareBaseline, parseTestFailures, parseTypeErrors } from "./guardrail
 
 const ROOT = join(import.meta.dir, "..");
 
-type Check = { name: string; baseline: string; run: () => Promise<string>; parse: (output: string) => string[] };
+type Check = {
+  name: string;
+  baseline: string;
+  run: () => Promise<string>;
+  parse: (output: string) => string[];
+  key?: (entry: string) => string;
+};
 
 // bun test changes its output format under CI (group markers, a repeated
 // failure summary), so we run it with the CI variables removed.
@@ -37,6 +43,7 @@ const CHECKS: Check[] = [
     baseline: join(ROOT, "scripts", "baselines", "test-failures.txt"),
     run: () => output([process.execPath, "test"]),
     parse: parseTestFailures,
+    key: testName,
   },
 ];
 
@@ -57,7 +64,7 @@ async function main(argv: string[]): Promise<number> {
       console.log(`${check.name}: wrote ${current.length} known failures to ${check.baseline}`);
       continue;
     }
-    const { added, removed } = compareBaseline(readBaseline(check.baseline), current);
+    const { added, removed } = compareBaseline(readBaseline(check.baseline), current, check.key);
     if (removed.length > 0) {
       console.log(`${check.name}: ${removed.length} known failures no longer occur. Run \`bun run check ${check.name} --update\` to drop them:`);
       for (const r of removed) console.log(`  ${r}`);
